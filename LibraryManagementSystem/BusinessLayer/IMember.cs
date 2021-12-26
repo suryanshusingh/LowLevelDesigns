@@ -7,10 +7,8 @@ namespace LibraryManagementSystem.BusinessLayer
 {
     interface IMember
     {
-        public bool ReserveBookItem(BookItem bookItem);
         public bool CheckOutBookItem(int memberId, BookItem bookItem);
-        public void ReturnBookItem(BookItem bookItem);
-        public void RenewBookItem(BookItem bookItem);
-
+        public void ReturnBookItem(int memberId, BookItem bookItem);
+        public bool RenewBookItem(int memberId, BookItem bookItem);
     }
 }

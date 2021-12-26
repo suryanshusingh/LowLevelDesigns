@@ -38,19 +38,49 @@ namespace LibraryManagementSystem.BusinessLayer
             return true;
         }
 
-        public void RenewBookItem(BookItem bookItem)
+        public bool RenewBookItem(int memberId, BookItem bookItem)
         {
-            throw new NotImplementedException();
+            var bookLendDetails = dataRepository.GetBookLendDetails(memberId, bookItem);
+            GetAndCollectFine(bookLendDetails);
+
+            var bookReservationDetails = dataRepository.GetBookReservationDetails(bookItem.Barcode);
+            if (bookReservationDetails != null && bookReservationDetails.MemberId != memberId)
+            {
+                // Book is reserved by another member. Cannot be renewed.
+                Console.WriteLine("Book is reserved by another member. Cannot be renewed.");
+                
+                // Notify other member about availability of book
+                dataRepository.UpdateStatus(bookItem, BookStatus.Reserved);
+                return false;
+            }
+
+            // Update book lend details for this user.
+            if (!dataRepository.UpdateLendDetails(memberId, bookItem)) return false;
+
+            return true;
         }
 
-        public bool ReserveBookItem(BookItem bookItem)
+        private void GetAndCollectFine(BookLendDetails bookLendDetails)
         {
-            throw new NotImplementedException();
+            if(bookLendDetails.DueDate > DateTime.Today.Date)
+            {
+                // collect fine
+            }
         }
 
-        public void ReturnBookItem(BookItem bookItem)
+        public void ReturnBookItem(int memberId, BookItem bookItem)
         {
-            throw new NotImplementedException();
+            var bookLendDetails = dataRepository.GetBookLendDetails(memberId, bookItem);
+            GetAndCollectFine(bookLendDetails);
+
+            var bookReservationDetails = dataRepository.GetBookReservationDetails(bookItem.Barcode);
+            if(bookReservationDetails != null)
+            {
+                dataRepository.UpdateStatus(bookItem, BookStatus.Reserved);
+                // Notify other member about availability of book
+            }
+
+            dataRepository.UpdateStatus(bookItem, BookStatus.Available);
         }
     }
 }
